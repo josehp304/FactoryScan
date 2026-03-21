@@ -6,6 +6,8 @@ export const trustProfiles = pgTable('trust_profiles', {
   phone_number: varchar('phone_number', { length: 50 }).unique(),
   trust_score: integer('trust_score').notNull().default(100),
   prior_flags: integer('prior_flags').notNull().default(0),
+  total_checks: integer('total_checks').notNull().default(0),
+  first_seen_at: timestamp('first_seen_at').defaultNow(),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
 });

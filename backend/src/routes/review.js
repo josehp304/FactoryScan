@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { trustProfiles, verificationLogs } from '../db/schema.js';
-import { eq, or } from 'drizzle-orm';
+import { verificationLogs } from '../db/schema.js';
+import { upsertAndScoreTrustProfile } from '../utils/trustProfile.js';
 
 const router = Router();
 
@@ -10,7 +10,7 @@ function assessAiText(text) {
     const aiPatterns = [/delve into/, /testament to/, /in conclusion/, /tapestry/];
     let flags = 0;
     aiPatterns.forEach(r => { if (r.test(text.toLowerCase())) flags++; });
-    return flags > 0 ? 85 : 12; // Basic probability
+    return flags > 0 ? 85 : 12;
 }
 
 // Basic heuristic for spam/manipulation
@@ -31,22 +31,26 @@ router.post('/score', async (req, res) => {
 
     // 1. AI Probability
     const aiProbability = assessAiText(review_text);
-    
+
     // 2. Spam assessment
     const spamFlags = assessSpam(review_text);
 
-    // 3. User Trust Score Look up
-    let trustScore = 100;
-    const conditions = [];
-    if (reviewer_email) conditions.push(eq(trustProfiles.email, reviewer_email));
-    if (reviewer_phone) conditions.push(eq(trustProfiles.phone_number, reviewer_phone));
-
-    const [user] = await db.select().from(trustProfiles).where(or(...conditions)).limit(1);
-    if (user) {
-        trustScore = user.trust_score;
+    // 3. Determine outcome for trust scoring
+    let outcome = 'PASS';
+    if (aiProbability > 80 || spamFlags.length > 0) {
+      outcome = aiProbability > 80 ? 'FAIL' : 'FLAG';
     }
 
-    // 4. Calculate final credibility
+    // 4. Upsert trust profile and update score based on this request's outcome
+    const trustProfile = await upsertAndScoreTrustProfile(
+      db,
+      { email: reviewer_email, phone_number: reviewer_phone },
+      outcome
+    );
+    const trustScore = trustProfile?.trust_score ?? 100;
+    const totalChecks = trustProfile?.total_checks ?? 1;
+
+    // 5. Calculate final credibility using updated trust score
     let credibilityScore = 100;
     if (aiProbability > 80) credibilityScore -= 40;
     if (spamFlags.length > 0) credibilityScore -= 30;
@@ -68,7 +72,12 @@ router.post('/score', async (req, res) => {
         signals: {
             ai_detection: { result: aiProbability > 50 ? 'FAIL' : 'PASS', probability: aiProbability },
             spam_check: { result: spamFlags.length > 0 ? 'FAIL' : 'PASS', flags: spamFlags.length },
-            trust_score: { result: trustScore < 80 ? 'FAIL' : 'PASS', score: trustScore }
+            trust_score: {
+              result: trustScore < 80 ? 'FAIL' : 'PASS',
+              score: trustScore,
+              total_checks: totalChecks,
+              profile_status: trustProfile ? 'existing' : 'new',
+            }
         }
     };
 

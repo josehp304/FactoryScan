@@ -23,19 +23,21 @@ export async function embedWatermark(imageBuffer, payload) {
     }
 
     image.scan(0, 0, image.bitmap.width, image.bitmap.height, function(x, y, idx) {
-        if (bitIndex < bits.length) {
-            // Modify Red channel
-            const bit = bits[bitIndex++];
-            this.bitmap.data[idx] = (this.bitmap.data[idx] & ~1) | bit;
-        }
+        if (bitIndex >= bits.length) return; // All bits embedded
+
+        // Modify Red channel
+        let bit = bits[bitIndex++];
+        this.bitmap.data[idx] = (this.bitmap.data[idx] & ~1) | bit;
+
         if (bitIndex < bits.length) {
             // Modify Green channel
-            const bit = bits[bitIndex++];
+            bit = bits[bitIndex++];
             this.bitmap.data[idx + 1] = (this.bitmap.data[idx + 1] & ~1) | bit;
         }
+
         if (bitIndex < bits.length) {
             // Modify Blue channel
-            const bit = bits[bitIndex++];
+            bit = bits[bitIndex++];
             this.bitmap.data[idx + 2] = (this.bitmap.data[idx + 2] & ~1) | bit;
         }
     });
@@ -53,24 +55,38 @@ export async function embedWatermark(imageBuffer, payload) {
 export async function extractWatermark(imageBuffer) {
   try {
     const image = await Jimp.read(imageBuffer);
-    const bits = [];
-    
-    image.scan(0, 0, image.bitmap.width, image.bitmap.height, function(x, y, idx) {
-        bits.push(this.bitmap.data[idx] & 1);
-        bits.push(this.bitmap.data[idx + 1] & 1);
-        bits.push(this.bitmap.data[idx + 2] & 1);
-    });
-
+    const data = image.bitmap.data;
     let extractedText = '';
-    for (let i = 0; i < bits.length; i += 8) {
-        let charCode = 0;
-        for (let b = 0; b < 8; b++) {
-            charCode = (charCode << 1) | bits[i + b];
-        }
-        extractedText += String.fromCharCode(charCode);
-        
-        if (extractedText.endsWith(END_DELIMITER)) {
-            return extractedText.slice(0, -END_DELIMITER.length);
+    let currentByte = 0;
+    let bitsCollected = 0;
+
+    // Scan the image data directly instead of Jimp's scan for better performance
+    // and manual loop control (bailing out early)
+    for (let i = 0; i < data.length; i++) {
+        // Skip alpha channel (every 4th byte)
+        if ((i + 1) % 4 === 0) continue;
+
+        // Extract LSB
+        const bit = data[i] & 1;
+        currentByte = (currentByte << 1) | bit;
+        bitsCollected++;
+
+        if (bitsCollected === 8) {
+            extractedText += String.fromCharCode(currentByte);
+            currentByte = 0;
+            bitsCollected = 0;
+
+            // Check if we hit the end delimiter
+            if (extractedText.endsWith(END_DELIMITER)) {
+                return extractedText.slice(0, -END_DELIMITER.length);
+            }
+
+            // Safety check: if we've extracted way more than a UUID + delimiter, 
+            // and no delimiter found, it's probably not watermarked or corrupted.
+            // Let's cap it at 1000 characters for now (UUID is ~36, delimiter is ~7).
+            if (extractedText.length > 1000) {
+                return null;
+            }
         }
     }
     

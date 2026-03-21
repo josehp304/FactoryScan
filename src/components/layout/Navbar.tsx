@@ -13,7 +13,7 @@ import { authClient } from "@/lib/auth/client";
 const NAV_LINKS = [
   { name: "Features", href: "/#features" },
   { name: "Plugin Integration", href: "/docs/integration" },
-  { name: "Dashboard", href: "/login" }, // Routes to auth before dashboard as requested
+  { name: "Dashboard", href: "/dashboard" }, 
 ];
 
 function UserMenu() {
@@ -102,6 +102,11 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Hide Navbar on dashboard and onboarding routes
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/profile-setup")) {
+    return null;
+  }
+
   return (
     <header
       className={cn(
@@ -150,7 +155,7 @@ export function Navbar() {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/docs/integration">
+                <Link href="/dashboard/api-keys">
                   <Button variant="primary" size="sm">
                     Get API Key
                   </Button>

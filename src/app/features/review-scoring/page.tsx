@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { MessageSquareWarning, Bot, MessageSquareOff, UserX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ReviewScoringPage() {
   const [reviewText, setReviewText] = useState("This product is absolutely amazing! I have never seen anything like it before in my entire life, it works perfectly and everyone should buy it right now!");
@@ -35,6 +36,7 @@ export default function ReviewScoringPage() {
 
   return (
     <div className={styles.container}>
+      <BackButton />
       <div className={styles.header}>
         <h1 className={styles.title}>Review Credibility Scoring</h1>
         <p className={styles.subtitle}>

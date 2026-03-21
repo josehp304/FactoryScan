@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ScanFace, UserCheck, AlertTriangle, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { BackButton } from "@/components/ui/BackButton";
 
 const MOCK_RESULTS = [
   { field: "Full Name", groundTruth: "John Smith", ocr: "John Smith", match: true },
@@ -41,6 +42,7 @@ export default function IdVerificationPage() {
 
   return (
     <div className={styles.container}>
+      <BackButton />
       <div className={styles.header}>
         <h1 className={styles.title}>Physical ID Verification</h1>
         <p className={styles.subtitle}>

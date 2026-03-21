@@ -11,6 +11,7 @@ import {
   MessageSquareWarning,
   ArrowRight,
   CheckCircle2,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,6 +26,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroBackground}>
+          <div className={styles.gridOverlay} />
           <div className={styles.blob1} />
           <div className={styles.blob2} />
         </div>
@@ -55,13 +57,96 @@ export default function Home() {
                 Launch Dashboard
               </Button>
             </Link>
-            <Link href="/docs/integration">
+            <Link href="/dashboard/api-keys">
               <Button variant="secondary" size="lg">
-                View Integration
+                Get API Access
               </Button>
             </Link>
           </motion.div>
+
+          <motion.div variants={fadeIn} className={styles.heroStats}>
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>2M+</span>
+              <span className={styles.statLabel}>Scans/Day</span>
+            </div>
+            <div className={styles.statDivider} />
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>99.9%</span>
+              <span className={styles.statLabel}>Accuracy</span>
+            </div>
+            <div className={styles.statDivider} />
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>&lt;200ms</span>
+              <span className={styles.statLabel}>Latency</span>
+            </div>
+          </motion.div>
         </motion.div>
+
+        {/* Floating UI Elements for Eye-Catching effect */}
+        <div className={styles.floatingElements}>
+            <motion.div 
+                className={styles.floatCard}
+                style={{ top: '15%', left: '12%' }}
+                animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
+                <div className={styles.floatIcon}><ShieldCheck size={18} /></div>
+                <span>Tamper-Proof</span>
+            </motion.div>
+            
+            <motion.div 
+                className={styles.floatCircle}
+                style={{ top: '35%', right: '8%' }}
+                animate={{ y: [0, 15, 0], scale: [1, 1.1, 1] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            >
+                <div className={styles.floatIcon} style={{ color: 'var(--secondary)' }}><Zap size={16} /></div>
+            </motion.div>
+
+            <motion.div 
+                className={styles.floatCard}
+                style={{ top: '65%', left: '15%' }}
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+                <div className={styles.floatIcon} style={{ color: 'var(--success)' }}><CheckCircle2 size={18} /></div>
+                <span>Trust Score: 98</span>
+            </motion.div>
+
+            <motion.div 
+                className={styles.floatCard}
+                style={{ top: '55%', right: '15%' }}
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            >
+                <div className={styles.floatIcon} style={{ color: 'var(--secondary)' }}><Fingerprint size={18} /></div>
+                <span>Identity Verified</span>
+            </motion.div>
+        </div>
+      </section>
+
+      {/* Trust Ticker / Logo Cloud */}
+      <section className={styles.tickerSection}>
+         <div className={styles.tickerWrapper}>
+            <div className={styles.tickerContent}>
+                <span>TRUSTED BY INDUSTRY LEADERS</span>
+                <div className={styles.dot} />
+                <span>SECURED OVER $400M IN TRANSACTIONS</span>
+                <div className={styles.dot} />
+                <span>ACTIVE NODES: 4,892</span>
+                <div className={styles.dot} />
+                <span>ZERO FALSE POSITIVES IN LAST 24H</span>
+                <div className={styles.dot} />
+                {/* Duplicate for seamless loop */}
+                <span>TRUSTED BY INDUSTRY LEADERS</span>
+                <div className={styles.dot} />
+                <span>SECURED OVER $400M IN TRANSACTIONS</span>
+                <div className={styles.dot} />
+                <span>ACTIVE NODES: 4,892</span>
+                <div className={styles.dot} />
+                <span>ZERO FALSE POSITIVES IN LAST 24H</span>
+            </div>
+         </div>
       </section>
 
       {/* Features Overview */}

@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import styles from "./page.module.css";
+import { cn } from "@/lib/utils";
+import { BackButton } from "@/components/ui/BackButton";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { UploadCloud, ScanLine, AlertTriangle, ShieldCheck, Image as ImageIcon } from "lucide-react";
@@ -53,6 +55,7 @@ export default function RefundVerificationPage() {
 
   return (
     <div className={styles.container}>
+      <BackButton />
       <div className={styles.header}>
         <h1 className={styles.title}>Refund Image Verification</h1>
         <p className={styles.subtitle}>

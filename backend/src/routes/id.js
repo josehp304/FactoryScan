@@ -102,6 +102,29 @@ router.post('/verify', upload.single('image'), async (req, res) => {
     let extractedData = {};
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const prompt = `You are a forensic document verification agent. Match the OCR text from the provided image against the Ground Truth data.
+
+      GROUND TRUTH (from secure QR):
+      - Name: ${groundTruth.name}
+      - Course: ${groundTruth.course}
+      - Student ID: ${groundTruth.student_id}
+      - Expiry/Batch: ${groundTruth.expiry}
+
+      TASK:
+      1. Extract the actual text from the ID card.
+      2. Compare each field to the Ground Truth.
+      3. For 'match' fields, use your judgment: minor formatting differences (e.g., "B.Tech" vs "BTech", "CSE C" vs "cse-c", or case differences) should be marked as MATCH: true.
+      4. If the data is fundamentally different (wrong name, wrong ID), mark MATCH: false.
+
+      Return ONLY a valid JSON object:
+      {
+        "college_name": "extracted college name",
+        "name": { "value": "extracted name", "match": true/false },
+        "course": { "value": "extracted course", "match": true/false },
+        "student_id": { "value": "extracted id", "match": true/false },
+        "expiry": { "value": "extracted expiry/batch", "match": true/false }
+      }`;
+
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
@@ -114,7 +137,7 @@ router.post('/verify', upload.single('image'), async (req, res) => {
                   mimeType: req.file.mimetype || "image/jpeg"
                 }
               },
-              { text: "Extract the details from this ID card image. Return ONLY a valid JSON object with the following keys: 'college_name', 'name', 'course', 'student_id', 'expiry'. If a field is not found or not applicable, set its value to an empty string. Only return the JSON object." }
+              { text: prompt }
             ]
           }
         ],
@@ -128,19 +151,17 @@ router.post('/verify', upload.single('image'), async (req, res) => {
     }
     
     console.log("OCR Extracted Data:", extractedData); // Logging for debugging
-    
-    const normalize = (val) => (val || "").toString().toLowerCase().trim();
 
-    const ocrResultName = extractedData.name || "UNKNOWN";
-    const ocrResultCourse = extractedData.course || "UNKNOWN";
-    const ocrResultStudentId = extractedData.student_id || "UNKNOWN";
-    const ocrResultExpiry = extractedData.expiry || "UNKNOWN";
+    const ocrResultName = extractedData.name?.value || "UNKNOWN";
+    const ocrResultCourse = extractedData.course?.value || "UNKNOWN";
+    const ocrResultStudentId = extractedData.student_id?.value || "UNKNOWN";
+    const ocrResultExpiry = extractedData.expiry?.value || "UNKNOWN";
     const ocrResultCollege = extractedData.college_name || "UNKNOWN";
 
-    const nameMatch = !!groundTruth.name && ocrResultName !== "UNKNOWN" && normalize(ocrResultName).includes(normalize(groundTruth.name));
-    const courseMatch = !!groundTruth.course && ocrResultCourse !== "UNKNOWN" && normalize(ocrResultCourse).includes(normalize(groundTruth.course));
-    const studentIdMatch = !!groundTruth.student_id && ocrResultStudentId !== "UNKNOWN" && normalize(ocrResultStudentId).includes(normalize(groundTruth.student_id));
-    const expiryMatch = !!groundTruth.expiry && ocrResultExpiry !== "UNKNOWN" && normalize(ocrResultExpiry).includes(normalize(groundTruth.expiry));
+    const nameMatch = extractedData.name?.match ?? false;
+    const courseMatch = extractedData.course?.match ?? false;
+    const studentIdMatch = extractedData.student_id?.match ?? false;
+    const expiryMatch = extractedData.expiry?.match ?? false;
 
     // 4. Comparison
     const checks = [

@@ -1,9 +1,10 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
+import { BackButton } from "@/components/ui/BackButton";
 import { ShieldAlert, ShieldCheck, Activity, Image as ImageIcon, FileText, FileBadge2, ArrowRight } from "lucide-react";
 
 const STATS = [
@@ -27,8 +28,58 @@ const RECENT = [
 ];
 
 export default function DashboardPage() {
+  const [statsData, setStatsData] = useState({
+    totalOperations: "...",
+    fraudStopped: "...",
+    avgTrustScore: "..."
+  });
+  const [recentLogs, setRecentLogs] = useState(RECENT);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+        const res = await fetch(`${backendUrl}/user/dashboard-stats`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.stats) {
+            setStatsData({
+              totalOperations: data.stats.totalOperations.toString(),
+              fraudStopped: data.stats.fraudStopped.toString(),
+              avgTrustScore: `${data.stats.avgTrustScore}/100`
+            });
+            if (data.recent && data.recent.length > 0) {
+              const mappedRecent = data.recent.map((log: any) => ({
+                id: log.id,
+                type: log.endpoint || "System Operation",
+                method: "Automated scan",
+                status: log.result_status || "VERIFIED",
+                risk: log.result_status === "FLAGGED" ? "HIGH" : "LOW",
+                time: new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                icon: ShieldCheck
+              }));
+              setRecentLogs(mappedRecent);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  const DYNAMIC_STATS = [
+    { label: "Total Operations", value: statsData.totalOperations, icon: Activity, trend: "Live" },
+    { label: "Fraud Stopped", value: statsData.fraudStopped, icon: ShieldAlert, trend: "Live" },
+    { label: "Avg Trust Score", value: statsData.avgTrustScore, icon: ShieldCheck, trend: "Live" },
+  ];
+
   return (
     <div className={styles.container}>
+      <div style={{ marginBottom: '1rem' }}>
+        <BackButton />
+      </div>
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Welcome back, Partner</h1>
@@ -42,7 +93,7 @@ export default function DashboardPage() {
 
       {/* Stats row */}
       <div className={styles.statsGrid}>
-        {STATS.map((stat, i) => {
+        {DYNAMIC_STATS.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <motion.div
@@ -132,7 +183,7 @@ export default function DashboardPage() {
           <Card glass>
             <h3 className={styles.cardTitle}>Recent Operations</h3>
             <div className={styles.recentList}>
-              {RECENT.map((item) => {
+              {recentLogs.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div key={item.id} className={styles.recentItem}>

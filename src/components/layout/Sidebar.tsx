@@ -14,6 +14,8 @@ import {
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth/client";
+
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -24,6 +26,14 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const session = authClient.useSession();
+  const user = session?.data?.user;
+
+  const initials = user?.name 
+    ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() 
+    : "U";
+  const name = user?.name || "User";
+  const email = user?.email || "user@example.com";
 
   return (
     <aside className={styles.sidebar}>
@@ -52,10 +62,10 @@ export function Sidebar() {
 
       <div className={styles.footer}>
         <div className={styles.profileCard}>
-          <div className={styles.avatar}>AP</div>
+          <div className={styles.avatar}>{initials}</div>
           <div className={styles.profileInfo}>
-            <p className={styles.profileName}>Akshay P</p>
-            <p className={styles.profileEmail}>akshay@factoryscan.io</p>
+            <p className={styles.profileName}>{name}</p>
+            <p className={styles.profileEmail}>{email}</p>
           </div>
         </div>
         

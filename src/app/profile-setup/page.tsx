@@ -19,6 +19,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { BackButton } from "@/components/ui/BackButton";
 import { authClient } from "@/lib/auth/client";
+import { syncUserWithBackend } from "@/lib/userSync";
 
 export default function ProfileSetupPage() {
   const router = useRouter();
@@ -40,14 +41,17 @@ export default function ProfileSetupPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Create organization using better-auth client
+      // Sync user to backend first
+      await syncUserWithBackend(formData.email, formData.phone, formData.fullName);
+      
+      // Create organization using auth client
       await authClient.organization.create({
         name: formData.company,
         slug: formData.company.toLowerCase().replace(/[^a-z0-9]/g, "-"),
       });
       router.push("/dashboard");
     } catch (error) {
-      console.error("Failed to create organization:", error);
+      console.error("Failed to setup profile:", error);
     } finally {
       setLoading(false);
     }

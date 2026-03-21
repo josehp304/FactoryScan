@@ -1,12 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { ShieldCheck, Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { authClient } from "@/lib/auth/client";
 
 const NAV_LINKS = [
   { name: "Features", href: "/#features" },
@@ -14,11 +16,83 @@ const NAV_LINKS = [
   { name: "Dashboard", href: "/login" }, // Routes to auth before dashboard as requested
 ];
 
+function UserMenu() {
+  const [open, setOpen] = useState(false);
+  const { data } = authClient.useSession();
+  const user = data?.user;
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    setOpen(false);
+    window.location.href = "/";
+  };
+
+  const avatarUrl = user?.image;
+  const initials = user?.name
+    ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "U";
+
+  return (
+    <div className={styles.userMenuWrapper}>
+      <button
+        className={styles.avatarBtn}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="User menu"
+      >
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={user?.name ?? "User"}
+            width={34}
+            height={34}
+            className={styles.avatarImg}
+          />
+        ) : (
+          <div className={styles.avatarFallback}>{initials}</div>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className={styles.userDropdown}
+            initial={{ opacity: 0, scale: 0.95, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+            transition={{ duration: 0.15 }}
+          >
+            <div className={styles.dropdownHeader}>
+              <p className={styles.dropdownName}>{user?.name}</p>
+              <p className={styles.dropdownEmail}>{user?.email}</p>
+            </div>
+            <div className={styles.dropdownDivider} />
+            <Link href="/account/settings" className={styles.dropdownItem} onClick={() => setOpen(false)}>
+              <User size={15} />
+              Account Settings
+            </Link>
+            <button className={cn(styles.dropdownItem, styles.dropdownItemDanger)} onClick={handleSignOut}>
+              <LogOut size={15} />
+              Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Backdrop to close on outside click */}
+      {open && (
+        <div className={styles.dropdownBackdrop} onClick={() => setOpen(false)} />
+      )}
+    </div>
+  );
+}
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
   const pathname = usePathname();
+  const { data, isPending } = authClient.useSession();
+  const isAuthenticated = !!data?.session;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,16 +139,24 @@ export function Navbar() {
             </Link>
           ))}
           <div className={styles.authGroup}>
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/docs/integration">
-              <Button variant="primary" size="sm">
-                Get API Key
-              </Button>
-            </Link>
+            {isPending ? (
+              <div className={styles.avatarSkeleton} />
+            ) : isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/docs/integration">
+                  <Button variant="primary" size="sm">
+                    Get API Key
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </nav>
 
@@ -111,16 +193,24 @@ export function Navbar() {
               </Link>
             ))}
             <div className={styles.mobileNavAction}>
-              <Link href="/login" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" className="w-full" style={{ marginBottom: '1rem' }}>
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/signup" onClick={() => setMobileOpen(false)}>
-                <Button variant="primary" className="w-full">
-                  Get Started
-                </Button>
-              </Link>
+              {isPending ? (
+                <div className={styles.avatarSkeleton} style={{ width: "100%", height: 40 }} />
+              ) : isAuthenticated ? (
+                <UserMenu />
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full" style={{ marginBottom: "1rem" }}>
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/signup" onClick={() => setMobileOpen(false)}>
+                    <Button variant="primary" className="w-full">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </motion.nav>
         )}

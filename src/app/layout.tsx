@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { authClient } from '@/lib/auth/client';
+import { NeonAuthUIProvider } from '@neondatabase/auth/react';
+import { Navbar } from '@/components/layout/Navbar';
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -13,8 +16,6 @@ export const metadata: Metadata = {
   description: 'AI-Powered Fraud Prevention & Document Verification SDK and SaaS Platform.',
 };
 
-import { Navbar } from '@/components/layout/Navbar';
-
 export default function RootLayout({
   children,
 }: {
@@ -23,10 +24,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Navbar />
-        <main className="app-main">
-          {children}
-        </main>
+        <NeonAuthUIProvider
+          authClient={authClient}
+          redirectTo="/profile-setup"
+          emailOTP
+          social={{ providers: ['google'] }}
+        >
+          <Navbar />
+          <main className="app-main">
+            {children}
+          </main>
+        </NeonAuthUIProvider>
       </body>
     </html>
   );

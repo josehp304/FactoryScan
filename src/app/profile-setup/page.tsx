@@ -64,10 +64,11 @@ export default function ProfileSetupPage() {
       }
 
       // 2. Save profile details to our backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/profile`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/profile`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
         },
         body: JSON.stringify({
           userId: session.user.id,

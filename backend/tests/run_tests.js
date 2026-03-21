@@ -19,10 +19,14 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const BASE_URL = 'http://localhost:3000';
+dotenv.config({ path: resolve(__dir, '../.env') });
+
+const BASE_URL = 'http://localhost:3002';
 const TEST_EMAIL = `tester_${Date.now()}@testmail.io`;
+const API_KEY = process.env.FACTORY_SCAN_API_KEY || '';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -42,14 +46,19 @@ function log(label, status, body) {
 }
 
 async function get(path) {
-  const res = await fetch(`${BASE_URL}${path}`);
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: { 'x-api-key': API_KEY }
+  });
   return { status: res.status, body: await res.json() };
 }
 
 async function postJSON(path, payload) {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY
+    },
     body: JSON.stringify(payload),
   });
   return { status: res.status, body: await res.json() };
@@ -67,6 +76,7 @@ async function postMultipart(path, fields, fileField, filePath, mimeType = 'imag
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
+    headers: { 'x-api-key': API_KEY },
     body: formData,
   });
 

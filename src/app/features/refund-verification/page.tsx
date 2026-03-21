@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { UploadCloud, ScanLine, AlertTriangle, ShieldCheck, Image as ImageIcon } from "lucide-react";
+import { UploadCloud, ScanLine, AlertTriangle, ShieldCheck, Image as ImageIcon, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function RefundVerificationPage() {
@@ -13,6 +13,8 @@ export default function RefundVerificationPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -41,12 +43,15 @@ export default function RefundVerificationPage() {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      // Sending mock data for trust scoring
-      formData.append("email", "test@example.com");
-      formData.append("phone_number", "+1234567890");
+      // Sending data for trust scoring
+      if (email.trim()) formData.append("email", email);
+      if (phoneNumber.trim()) formData.append("phone_number", phoneNumber);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/refund/verify`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/refund/verify`, {
         method: "POST",
+        headers: {
+          'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
+        },
         body: formData,
       });
 
@@ -114,6 +119,31 @@ export default function RefundVerificationPage() {
             )}
           </Card>
 
+          <Card glass className={styles.inputCard}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="email">Customer Email <span className={styles.optional}>(Optional)</span></label>
+              <input 
+                id="email"
+                type="email" 
+                placeholder="customer@example.com" 
+                className={styles.inputField}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className={styles.inputGroup}>
+              <label htmlFor="phone">Customer Phone <span className={styles.optional}>(Optional)</span></label>
+              <input 
+                id="phone"
+                type="tel" 
+                placeholder="+1 234 567 8900" 
+                className={styles.inputField}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+            </div>
+          </Card>
+
           <Button 
             className={styles.scanBtn}
             size="lg" 
@@ -165,13 +195,17 @@ export default function RefundVerificationPage() {
                   className={styles.resultData}
                 >
                   <div className={styles.resultHeader}>
-                    <div className={styles.verdictBox}>
+                    <div className={cn(styles.verdictBox, result.overall_risk === "LOW" && styles.success, result.overall_risk === "MEDIUM" && styles.warning)}>
                       <span className={styles.verdictLabel}>VERDICT</span>
-                      <h2 className={styles.verdictText}>{result.recommended_action}</h2>
+                      <h2 className={cn(styles.verdictText, result.overall_risk === "LOW" && styles.success, result.overall_risk === "MEDIUM" && styles.warning)}>
+                        {result.recommended_action}
+                      </h2>
                     </div>
-                    <div className={styles.scoreBox}>
+                    <div className={cn(styles.scoreBox, result.overall_risk === "LOW" && styles.success, result.overall_risk === "MEDIUM" && styles.warning)}>
                       <span className={styles.scoreLabel}>TRUST SCORE</span>
-                      <h2 className={styles.scoreText}>{result.trust_score}</h2>
+                      <h2 className={cn(styles.scoreText, result.overall_risk === "LOW" && styles.success, result.overall_risk === "MEDIUM" && styles.warning)}>
+                        {result.trust_score}
+                      </h2>
                     </div>
                   </div>
 
@@ -180,27 +214,45 @@ export default function RefundVerificationPage() {
                     
                     <div className={styles.signalItem}>
                       <div className={styles.signalHeader}>
-                        <AlertTriangle className={styles.signalIconFail} />
+                        {result.signal_breakdown.ai_forensics.result === "PASS" ? (
+                          <CheckCircle className={styles.signalIconPass} />
+                        ) : (
+                          <AlertTriangle className={styles.signalIconFail} />
+                        )}
                         <h4>AI Generation Forensics</h4>
-                        <span className={styles.signalBadgeFail}>{result.signal_breakdown.ai_forensics.confidence}% Match</span>
+                        <span className={result.signal_breakdown.ai_forensics.result === "PASS" ? styles.signalBadgePass : styles.signalBadgeFail}>
+                          {result.signal_breakdown.ai_forensics.confidence}% Match
+                        </span>
                       </div>
                       <p className={styles.signalDesc}>{result.signal_breakdown.ai_forensics.details}</p>
                     </div>
 
                     <div className={styles.signalItem}>
                       <div className={styles.signalHeader}>
-                        <AlertTriangle className={styles.signalIconFail} />
+                        {result.signal_breakdown.exif_analysis.result === "PASS" ? (
+                          <CheckCircle className={styles.signalIconPass} />
+                        ) : (
+                          <AlertTriangle className={styles.signalIconFail} />
+                        )}
                         <h4>EXIF Metadata Analysis</h4>
-                        <span className={styles.signalBadgeFail}>Anomalies</span>
+                        <span className={result.signal_breakdown.exif_analysis.result === "PASS" ? styles.signalBadgePass : styles.signalBadgeFail}>
+                          {result.signal_breakdown.exif_analysis.result === "PASS" ? "Clean" : "Anomalies"}
+                        </span>
                       </div>
                       <p className={styles.signalDesc}>{result.signal_breakdown.exif_analysis.details}</p>
                     </div>
 
                     <div className={styles.signalItem}>
                       <div className={styles.signalHeader}>
-                        <ShieldCheck className={styles.signalIconFail} />
+                        {result.signal_breakdown.trust_score_check.result === "PASS" ? (
+                          <ShieldCheck className={styles.signalIconPass} />
+                        ) : (
+                          <ShieldCheck className={styles.signalIconFail} />
+                        )}
                         <h4>Global Trust Network</h4>
-                        <span className={styles.signalBadgeFail}>History</span>
+                        <span className={result.signal_breakdown.trust_score_check.result === "PASS" ? styles.signalBadgePass : styles.signalBadgeFail}>
+                          {result.signal_breakdown.trust_score_check.result === "PASS" ? "Trusted" : "History"}
+                        </span>
                       </div>
                       <p className={styles.signalDesc}>{result.signal_breakdown.trust_score_check.details}</p>
                     </div>

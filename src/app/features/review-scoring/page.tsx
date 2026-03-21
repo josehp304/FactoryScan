@@ -22,9 +22,12 @@ export default function ReviewScoringPage() {
     setResult(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/review/score`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/review/score`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
+        },
         body: JSON.stringify({
           review_text: reviewText,
           reviewer_email: reviewerEmail,

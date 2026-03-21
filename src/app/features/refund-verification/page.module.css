@@ -210,6 +210,8 @@
   top: 0; left: 0; right: 0; height: 3px;
   background: var(--destructive);
 }
+.verdictBox.success::after { background: #10b981; }
+.verdictBox.warning::after { background: #f59e0b; }
 
 .scoreBox::after {
   content: "";
@@ -217,6 +219,8 @@
   top: 0; left: 0; right: 0; height: 3px;
   background: var(--destructive); /* because score is low */
 }
+.scoreBox.success::after { background: #10b981; }
+.scoreBox.warning::after { background: #f59e0b; }
 
 .verdictLabel, .scoreLabel {
   font-size: 0.75rem;
@@ -233,6 +237,8 @@
   color: var(--destructive);
   margin: 0;
 }
+.verdictText.success, .scoreText.success { color: #10b981; }
+.verdictText.warning, .scoreText.warning { color: #f59e0b; }
 
 .signalsList {
   display: flex;
@@ -268,15 +274,29 @@
   flex: 1;
 }
 
-.signalIconFail {
-  color: var(--destructive);
-  width: 18px;
-  height: 18px;
-}
+.signalIconFail { color: var(--destructive); width: 18px; height: 18px; }
+.signalIconPass { color: #10b981; width: 18px; height: 18px; }
+.signalIconWarn { color: #f59e0b; width: 18px; height: 18px; }
 
 .signalBadgeFail {
   background: rgba(239, 68, 68, 0.15);
   color: var(--destructive);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.signalBadgePass {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.signalBadgeWarn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -287,4 +307,44 @@
   color: var(--muted-foreground);
   font-size: 0.875rem;
   padding-left: calc(18px + 0.75rem);
+}
+
+.inputCard {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputGroup label {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.optional {
+  color: var(--muted-foreground);
+  font-weight: normal;
+  font-size: 0.75rem;
+}
+
+.inputField {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--foreground);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.inputField:focus {
+  border-color: var(--primary);
 }

@@ -101,15 +101,21 @@ export default function PluginPage() {
                     </div>
                     <div className={styles.previewContent}>
                         <pre className={styles.codeSnippet}>
-{`{
-  "status": "SECURED",
-  "trust_score": 98,
-  "signals": [
-    "AI_GEN_DETECTION: PASS",
-    "METADATA_INTEGRITY: PASS",
-    "LIVENESS_CHECK: PASS"
-  ]
-}`}
+{`const res = await fetch('https://api.factoryscan.io/v1/review/score', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'fs_live_YourApiKeyHere...'
+  },
+  body: JSON.stringify({
+    reviewer_email: 'user@example.com',
+    review_text: 'Great product, works as expected!',
+    platform_id: 'shopify_01'
+  })
+});
+
+const data = await res.json();
+console.log(data.recommendation); // "DISPLAY"`}
                         </pre>
                     </div>
                     <div className={styles.previewStats}>

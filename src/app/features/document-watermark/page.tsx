@@ -39,8 +39,11 @@ export default function DocumentWatermarkPage() {
         formData.append("recipient_name", "John Doe");
         formData.append("document_type", "Certificate");
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/document/watermark`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/document/watermark`, {
           method: "POST",
+          headers: {
+            'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
+          },
           body: formData,
         });
 
@@ -53,8 +56,11 @@ export default function DocumentWatermarkPage() {
            setResult({ success: false, mode: "issue", error: "Failed to apply watermark" });
         }
       } else {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/document/verify`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/document/verify`, {
           method: "POST",
+          headers: {
+            'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
+          },
           body: formData,
         });
 

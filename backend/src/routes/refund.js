@@ -31,11 +31,14 @@ router.post('/verify', upload.single('image'), async (req, res) => {
     let action = 'AUTO_APPROVE';
     let outcome = 'PASS';
 
-    if (isAi || exifResults.flags.length > 1) {
+    // Give high weightage to AI model results, lower weightage to EXIF analysis
+    if (isAi) {
+      // AI score > 0.5 immediately results in HIGH risk outright
       riskLevel = 'HIGH';
       action = 'DENY';
       outcome = 'FAIL';
-    } else if (exifResults.flags.length > 0 || aiScore > 0.3) {
+    } else if (aiScore > 0.3 || exifResults.flags.length > 2) {
+      // AI score > 0.3 or 3+ EXIF errors triggers a MEDIUM risk. (1-2 EXIF flags ignored)
       riskLevel = 'MEDIUM';
       action = 'FLAG_FOR_REVIEW';
       outcome = 'FLAG';

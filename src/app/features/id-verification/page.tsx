@@ -51,8 +51,11 @@ export default function IdVerificationPage() {
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/id/verify`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/id/verify`, {
         method: "POST",
+        headers: {
+          'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
+        },
         body: formData,
       });
 
@@ -77,9 +80,12 @@ export default function IdVerificationPage() {
     setGenerationMsg("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/id/generate`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/id/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
+        },
         body: JSON.stringify(userIdData),
       });
 

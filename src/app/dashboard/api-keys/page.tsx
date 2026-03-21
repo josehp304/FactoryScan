@@ -27,7 +27,9 @@ export default function APIKeysPage() {
 
   const fetchKeys = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/keys/${session?.user?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/keys/${session?.user?.id}`, {
+        headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
+      });
       const data = await res.json();
       if (data.success) {
         setKeys(data.result);
@@ -38,15 +40,22 @@ export default function APIKeysPage() {
   };
 
   const handleCreate = async () => {
-    if (!session?.user?.id) return;
+    console.log("Create clicked. Session:", session);
+    if (!session?.user?.id) {
+      alert("Missing user session ID!");
+      return;
+    }
     setLoading(true);
     try {
       const expiry = new Date();
       expiry.setDate(expiry.getDate() + Number(expiresInDays));
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/keys`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/keys`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
+        },
         body: JSON.stringify({
           userId: session.user.id,
           name: newKeyName || "Standard Key",
@@ -67,8 +76,9 @@ export default function APIKeysPage() {
 
   const handleRevoke = async (id: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/keys/${id}`, {
-        method: "DELETE"
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/keys/${id}`, {
+        method: "DELETE",
+        headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
       });
       if (res.ok) {
         setKeys(keys.filter(k => k.id !== id));

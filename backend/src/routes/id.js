@@ -6,6 +6,7 @@ import { extractQRCode } from '../utils/qrExtraction.js';
 import { db } from '../db/index.js';
 import { physicalIds, verificationLogs } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import Tesseract from 'tesseract.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -97,19 +98,27 @@ router.post('/verify', upload.single('image'), async (req, res) => {
         });
     }
 
-    // 3. Mock OCR Comparison (A real app would run OCR here and compare)
-    const mockOcrResult = {
-        name: groundTruth.name,
-        course: groundTruth.course,
-        student_id: groundTruth.student_id,
-        expiry: "Mocked OCR Expiry String" // Intentional mock mismatch for demonstration
-    };
+    // 3. Perform Actual OCR via Tesseract
+    const { data: { text } } = await Tesseract.recognize(req.file.buffer, 'eng');
+    console.log("OCR Detected Text:", text); // Logging for debugging
+    
+    // Simple mock heuristic for matching (you might want more robust regex searching!)
+    const ocrDetectedText = text.toLowerCase();
+    
+    // We try to find the ground truth anywhere in the scanned OCR text
+    const nameMatch = groundTruth.name && ocrDetectedText.includes(groundTruth.name.toLowerCase());
+    const courseMatch = groundTruth.course && ocrDetectedText.includes(groundTruth.course.toLowerCase());
+    const studentIdMatch = groundTruth.student_id && ocrDetectedText.includes(groundTruth.student_id.toLowerCase());
+
+    const ocrResultName = nameMatch ? groundTruth.name : (text.split('\n').slice(0, 3).join(' ') || "UNKNOWN");
+    const ocrResultCourse = courseMatch ? groundTruth.course : "UNKNOWN";
+    const ocrResultStudentId = studentIdMatch ? groundTruth.student_id : "UNKNOWN";
 
     // 4. Comparison
     const checks = [
-        { field: 'Full Name', gt: groundTruth.name, ocr: mockOcrResult.name, pass: groundTruth.name === mockOcrResult.name },
-        { field: 'Course', gt: groundTruth.course, ocr: mockOcrResult.course, pass: groundTruth.course === mockOcrResult.course },
-        { field: 'Student ID', gt: groundTruth.student_id, ocr: mockOcrResult.student_id, pass: groundTruth.student_id === mockOcrResult.student_id }
+        { field: 'Full Name', gt: groundTruth.name, ocr: ocrResultName, pass: nameMatch },
+        { field: 'Course', gt: groundTruth.course, ocr: ocrResultCourse, pass: courseMatch },
+        { field: 'Student ID', gt: groundTruth.student_id, ocr: ocrResultStudentId, pass: studentIdMatch }
     ];
 
     const tamperedFields = checks.filter(c => !c.pass);

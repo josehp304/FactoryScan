@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+// import React, { useState, useEffect } from "react";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
@@ -7,7 +7,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import styles from "./page.module.css";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
-import { BackButton } from "@/components/ui/BackButton";
+// import { BackButton } from "@/components/ui/BackButton";
 import { ShieldAlert, ShieldCheck, Activity, Image as ImageIcon, FileText, FileBadge2, ArrowRight } from "lucide-react";
 
 const INITIAL_STATS = [
@@ -82,7 +82,9 @@ export default function DashboardPage() {
   useEffect(() => {
     if (session?.user?.id) {
       // 1. Fetch profile
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/profile/${session.user.id}`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/profile/${session.user.id}`, {
+        headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -92,7 +94,9 @@ export default function DashboardPage() {
         .catch(err => console.error("Failed to fetch profile:", err));
       
       // 2. Fetch stats
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/dashboard/stats`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/dashboard/stats`, {
+        headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success && data.stats) {
@@ -106,7 +110,9 @@ export default function DashboardPage() {
         .catch(err => console.error("Failed to fetch stats:", err));
 
       // 3. Fetch recent
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/dashboard/recent`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/dashboard/recent`, {
+        headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success && data.result) {

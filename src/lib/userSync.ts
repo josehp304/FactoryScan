@@ -6,6 +6,7 @@ export async function syncUserWithBackend(email: string, phone_number?: string, 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
       },
       body: JSON.stringify({
         email,

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { Space_Grotesk, Syne, Fira_Code } from 'next/font/google';
+import { Card } from '@/components/ui/Card';
 
 const space = Space_Grotesk({ subsets: ['latin'] });
 const syne = Syne({ subsets: ['latin'] });
@@ -46,9 +47,9 @@ export default function TrustDatabase() {
 
       <div className={styles.dashboardSection}>
         {/* Node Network Map */}
-        <div className={styles.card}>
+        <Card glass hoverEffect glowColor="var(--primary)" className={styles.networkCard}>
           <h3 className={styles.sectionTitle}>Network Topography</h3>
-          <p style={{ color: '#a3a3a3', marginBottom: '1rem' }}>Live visualization of cross-store identity mapping.</p>
+          <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>Live visualization of cross-store identity mapping.</p>
           <div className={styles.networkVisualization}>
             {/* Center Node */}
             <div className={`${styles.node} ${styles.nodeCenter}`}>
@@ -93,10 +94,10 @@ export default function TrustDatabase() {
               );
             })}
           </div>
-        </div>
+        </Card>
 
         {/* Global Trust Score Component */}
-        <div className={styles.card}>
+        <Card glass hoverEffect glowColor="var(--secondary)" className={styles.scoreCard}>
           <div className={styles.scoreVisualizer}>
             <div className={styles.scoreCircle}>
               <div className={styles.scoreContent}>
@@ -104,14 +105,14 @@ export default function TrustDatabase() {
                 <div className={`${styles.scoreLabel} ${space.className}`}>Trust Index</div>
               </div>
             </div>
-            <p style={{ color: '#a3a3a3', textAlign: 'center', marginTop: '1rem' }}>
+            <p style={{ color: 'var(--muted-foreground)', textAlign: 'center', marginTop: '1rem' }}>
               Your universal trust score algorithmically synthesized from millions of global data points.
             </p>
           </div>
-        </div>
+        </Card>
 
         {/* Audit Log */}
-        <div className={`${styles.card} ${styles.fullWidth}`} style={{ gridColumn: '1 / -1' }}>
+        <Card glass hoverEffect glowColor="var(--success)" className={styles.fullWidthCard} style={{ gridColumn: '1 / -1' }}>
           <h3 className={styles.sectionTitle}>Global Audit Log</h3>
           <div className={styles.logTableContainer}>
             <div className={styles.logHeader}>
@@ -135,7 +136,7 @@ export default function TrustDatabase() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

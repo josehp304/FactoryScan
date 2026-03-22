@@ -52,6 +52,8 @@
   font-size: 0.875rem;
   font-weight: 600;
   border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
 }
 
 .statsGrid {
@@ -116,7 +118,7 @@
   height: 350px;
   width: 100%;
   border-radius: 0.75rem;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5) 0%, rgba(9, 9, 11, 0.8) 100%);
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, rgba(3, 7, 18, 0.95) 100%);
   border: 1px solid rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
@@ -130,11 +132,18 @@
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background-image: 
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 30px 30px;
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
   background-position: center center;
-  opacity: 0.5;
+  opacity: 0.8;
+  transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(40px) translateZ(-200px); }
 }
 
 .radarEffect {
@@ -145,14 +154,14 @@
   width: 250px;
   height: 250px;
   border-radius: 50%;
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2), inset 0 0 20px rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.2), inset 0 0 30px rgba(56, 189, 248, 0.1);
   animation: radarPulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes radarPulse {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-width: 2px; }
+  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; border-width: 1px; }
 }
 
 .radarScanningBar {
@@ -161,10 +170,11 @@
   left: 50%;
   width: 50%;
   height: 50%;
-  border-right: 2px solid #10b981;
-  background: conic-gradient(from 180deg at 0 0, transparent 40%, rgba(16, 185, 129, 0.4) 100%);
+  border-right: 2px solid #38bdf8;
+  background: conic-gradient(from 180deg at 0 0, transparent 40%, rgba(56, 189, 248, 0.4) 100%);
   transform-origin: 0% 0%;
   animation: radarSpin 4s linear infinite;
+  box-shadow: 2px 0 10px rgba(56, 189, 248, 0.5);
 }
 
 @keyframes radarSpin {
@@ -176,15 +186,15 @@
   position: absolute;
   width: 8px;
   height: 8px;
-  background: #10b981;
+  background: #38bdf8;
   border-radius: 50%;
-  box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+  box-shadow: 0 0 10px #38bdf8, 0 0 20px #38bdf8, 0 0 30px #ffffff;
   animation: dotBlink 2s infinite;
 }
 
 @keyframes dotBlink {
-  0%, 100% { opacity: 0.2; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
+  0%, 100% { opacity: 0.1; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.5); }
 }
 
 .scanningText {
@@ -292,14 +302,16 @@
 }
 
 .quickActionCard {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   position: relative;
   overflow: hidden;
@@ -307,10 +319,10 @@
 }
 
 .quickActionCard:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
-  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
 }
 
 .cardGlow {

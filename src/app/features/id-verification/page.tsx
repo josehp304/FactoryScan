@@ -63,7 +63,8 @@ export default function IdVerificationPage() {
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/id/verify`, {
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002').replace(/\/api\/v1\/?$/, '');
+      const response = await fetch(`${baseUrl}/api/v1/id/verify`, {
         method: "POST",
         headers: {
           'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || ''
@@ -92,7 +93,8 @@ export default function IdVerificationPage() {
     setGenerationMsg("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/id/generate`, {
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002').replace(/\/api\/v1\/?$/, '');
+      const response = await fetch(`${baseUrl}/api/v1/id/generate`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -289,78 +291,107 @@ export default function IdVerificationPage() {
         )}
 
         {mode === "generate" && (
-          <div style={{ width: "100%", display: "flex", gap: "20px" }}>
-            <div style={{ flex: 1 }}>
-              <Card glass style={{ padding: "20px" }}>
-                <h3 style={{ marginBottom: "1rem" }}>User Details</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "5px", fontSize: "0.9rem" }}>Full Name</label>
-                    <input 
-                      style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "white" }} 
-                      value={userIdData.name} 
-                      onChange={e => setUserIdData({...userIdData, name: e.target.value})} 
-                      placeholder="e.g. John Doe" 
-                    />
+          <>
+            <div className={styles.generateLeftCol}>
+              <Card glass hoverEffect className={styles.generateFormCard}>
+                <h3 style={{ marginBottom: "0.5rem", fontSize: "1.75rem", fontWeight: "700" }}>User Security Details</h3>
+                <p style={{ color: "var(--muted-foreground)", marginBottom: "2rem", fontSize: "0.95rem" }}>Enter the ground truth details to mathematically bind to the QR token.</p>
+                <div className={styles.generateFormSpacing}>
+                  <div className={styles.inputGrid}>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>Full Name</label>
+                      <input 
+                        className={styles.glassInput}
+                        value={userIdData.name} 
+                        onChange={e => setUserIdData({...userIdData, name: e.target.value})} 
+                        placeholder="e.g. John Doe" 
+                      />
+                    </div>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>Student/Employee ID</label>
+                      <input 
+                        className={styles.glassInput}
+                        value={userIdData.student_id} 
+                        onChange={e => setUserIdData({...userIdData, student_id: e.target.value})} 
+                        placeholder="e.g. 20210445" 
+                      />
+                    </div>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>Course / Title</label>
+                      <input 
+                        className={styles.glassInput}
+                        value={userIdData.course} 
+                        onChange={e => setUserIdData({...userIdData, course: e.target.value})} 
+                        placeholder="e.g. BSc Computer Science" 
+                      />
+                    </div>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>Expiry Date</label>
+                      <input 
+                        className={styles.glassInput}
+                        value={userIdData.expiry} 
+                        onChange={e => setUserIdData({...userIdData, expiry: e.target.value})} 
+                        placeholder="e.g. August 2026" 
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "5px", fontSize: "0.9rem" }}>Student/Employee ID</label>
-                    <input 
-                      style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "white" }} 
-                      value={userIdData.student_id} 
-                      onChange={e => setUserIdData({...userIdData, student_id: e.target.value})} 
-                      placeholder="e.g. 20210445" 
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "5px", fontSize: "0.9rem" }}>Course / Title</label>
-                    <input 
-                      style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "white" }} 
-                      value={userIdData.course} 
-                      onChange={e => setUserIdData({...userIdData, course: e.target.value})} 
-                      placeholder="e.g. BSc Computer Science" 
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "5px", fontSize: "0.9rem" }}>Expiry Date String</label>
-                    <input 
-                      style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "white" }} 
-                      value={userIdData.expiry} 
-                      onChange={e => setUserIdData({...userIdData, expiry: e.target.value})} 
-                      placeholder="e.g. August 2026" 
-                    />
-                  </div>
+
+                  <div style={{ flexGrow: 1 }} />
                   <Button 
+                    size="lg"
+                    className={styles.actionBtn}
                     onClick={generateId} 
                     disabled={isGenerating || !userIdData.name || !userIdData.student_id}
                     isLoading={isGenerating}
-                    style={{ marginTop: "10px" }}
+                    style={{ marginTop: "1rem" }}
                   >
-                    Generate / Update DB & QR Code
+                    Generate Secure Cryptographic QR
                   </Button>
                 </div>
               </Card>
             </div>
             
-            <div style={{ flex: 1 }}>
-              <Card glass style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "350px" }}>
-                {!generatedQr && !isGenerating && (
-                  <p style={{ color: "var(--muted-foreground)" }}>Enter details and generate to see the secure QR code.</p>
-                )}
-                {isGenerating && <div className={styles.spinner} />}
-                {generatedQr && (
-                  <div style={{ textAlign: "center" }}>
-                    <img src={generatedQr} alt="Secure QR Code" style={{ width: "200px", height: "200px", borderRadius: "8px", border: "4px solid white" }} />
-                    <p style={{ marginTop: "20px", color: "var(--success)" }}>{generationMsg}</p>
-                    <p style={{ marginTop: "10px", fontSize: "0.85rem", color: "var(--muted-foreground)" }}>
-                      Print this QR on the physical ID. The scanner will read this QR URL, match the token `signed_token` with the database ground-truth, and run an OCR to detect physical visual alterations!
-                    </p>
-                  </div>
-                )}
-                {generationMsg && !generatedQr && <p style={{ color: "var(--destructive)" }}>{generationMsg}</p>}
+            <div className={styles.generateRightCol}>
+              <Card glass hoverEffect className={styles.qrDisplayCard}>
+                <AnimatePresence mode="wait">
+                  {!generatedQr && !isGenerating && (
+                    <motion.div 
+                      key="empty"
+                      initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                      style={{ textAlign: "center", margin: "auto" }}
+                    >
+                      <QrCode size={56} style={{ color: "var(--muted-foreground)", opacity: 0.5, marginBottom: "1.5rem" }} />
+                      <p style={{ color: "var(--muted-foreground)", fontSize: "1.1rem" }}>Awaiting Data Inputs...</p>
+                    </motion.div>
+                  )}
+                  {isGenerating && (
+                    <motion.div 
+                      key="generating"
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      style={{ margin: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}
+                    >
+                      <div className={styles.spinningIcon}><QrCode size={48} /></div>
+                      <p style={{ color: "var(--primary)", fontSize: "1.1rem" }}>Signing metadata locally...</p>
+                    </motion.div>
+                  )}
+                  {generatedQr && (
+                    <motion.div 
+                      key="result"
+                      initial={{ opacity: 0, scale: 0.8, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                      style={{ textAlign: "center", margin: "auto" }}
+                    >
+                      <img src={generatedQr} alt="Secure QR Code" className={styles.qrImage} />
+                      <p style={{ marginTop: "20px", color: "var(--success)", fontWeight: "600", fontSize: "1.1rem" }}>{generationMsg}</p>
+                      <p style={{ marginTop: "1rem", fontSize: "0.9rem", color: "var(--muted-foreground)", lineHeight: "1.6" }}>
+                        Print this QR on the physical ID. The scanner will read this URL, extract the <code style={{color: 'var(--foreground)', background: 'rgba(255,255,255,0.1)', padding:'2px 6px', borderRadius:'4px'}}>signed_token</code>, verify ground-truth, and run OCR against the card to detect physical/digital alterations!
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {generationMsg && !generatedQr && <p style={{ color: "var(--destructive)", margin: "auto", fontSize: "1.1rem" }}>{generationMsg}</p>}
               </Card>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

@@ -81,8 +81,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (session?.user?.id) {
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002').replace(/\/api\/v1\/?$/, '');
+      
       // 1. Fetch profile
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/profile/${session.user.id}`, {
+      fetch(`${baseUrl}/api/v1/profile/${session.user.id}`, {
         headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
       })
         .then(res => res.json())
@@ -94,7 +96,7 @@ export default function DashboardPage() {
         .catch(err => console.error("Failed to fetch profile:", err));
       
       // 2. Fetch stats
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/dashboard/stats`, {
+      fetch(`${baseUrl}/api/v1/dashboard/stats`, {
         headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
       })
         .then(res => res.json())
@@ -110,7 +112,7 @@ export default function DashboardPage() {
         .catch(err => console.error("Failed to fetch stats:", err));
 
       // 3. Fetch recent
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'}/api/v1/dashboard/recent`, {
+      fetch(`${baseUrl}/api/v1/dashboard/recent`, {
         headers: { 'x-api-key': process.env.NEXT_PUBLIC_FACTORY_SCAN_API_KEY || '' }
       })
         .then(res => res.json())

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
-import { motion, useInView, useAnimationControls } from "framer-motion";
+import { motion, useInView, useAnimationControls, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import {
@@ -24,60 +24,78 @@ const fadeIn = {
   visible: { opacity: 1, y: 0 },
 };
 
-// Animated number counter hook
-function useCountUp(target: number, duration: number, trigger: boolean) {
-  const [count, setCount] = useState(100);
-  useEffect(() => {
-    if (!trigger) return;
-    const start = 100;
-    const diff = start - target;
-    const steps = Math.ceil(duration / 16);
-    let step = 0;
-    const timer = setInterval(() => {
-      step++;
-      setCount(Math.round(start - (diff * step) / steps));
-      if (step >= steps) clearInterval(timer);
-    }, 16);
-    return () => clearInterval(timer);
-  }, [trigger, target, duration]);
-  return count;
-}
-
-const TRUST_LEVELS = [
-  {
-    range: "80–100",
-    label: "Auto-Approve",
-    status: "success",
-    icon: CheckCircle2,
-    color: "#06b6d4",
-    desc: "Instant clearance. No friction.",
-  },
-  {
-    range: "50–79",
-    label: "Flag for Review",
-    status: "warning",
-    icon: AlertTriangle,
-    color: "#f59e0b",
-    desc: "Human review triggered.",
-  },
-  {
-    range: "0–49",
-    label: "Auto-Deny & Escalate",
-    status: "danger",
-    icon: Ban,
-    color: "#ef4444",
-    desc: "Transaction blocked network-wide.",
-  },
+const MOCK_TRANSACTIONS = [
+  { id: "tx_8921A", amount: "$149.00", user: "j.doe@example.com", status: "VERIFIED", node: "Node-US-East" },
+  { id: "tx_3C4D9", amount: "$89.50", user: "maria.s@example.com", status: "VERIFIED", node: "Node-EU-West" },
+  { id: "tx_5E6F2", amount: "$1,200.00", user: "anon_991@crypto.net", status: "FLAGGED", node: "Node-AP-South" },
+  { id: "tx_7G8H4", amount: "$24.99", user: "k.smith@domain.com", status: "VERIFIED", node: "Node-US-West" },
+  { id: "tx_9I0J7", amount: "$4,500.00", user: "unknown@proxy.vpn", status: "FLAGGED", node: "Node-EU-Central" },
+  { id: "tx_1K2L3", amount: "$350.00", user: "alice.w@company.com", status: "VERIFIED", node: "Node-AF-North" },
 ];
 
+function LiveTransactionFeed() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [transactions, setTransactions] = useState<any[]>([]);
+  
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setTransactions((prev) => {
+        const nextTx = MOCK_TRANSACTIONS[index % MOCK_TRANSACTIONS.length];
+        const newTx = { ...nextTx, _uid: Date.now() }; // unique ID for animation
+        const updated = [newTx, ...prev];
+        if (updated.length > 5) updated.pop();
+        return updated;
+      });
+      index++;
+    }, 2000); // New transaction every 2s
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className={styles.terminalBox}>
+      <div className={styles.terminalHeader}>
+        <div className={styles.terminalDots}>
+          <span className={styles.dotRed} />
+          <span className={styles.dotYellow} />
+          <span className={styles.dotGreen} />
+        </div>
+        <span className={styles.terminalTitle}>live_network_feed</span>
+        <div className={styles.headerPing}>
+          <span className={styles.pingDot} />
+          ACTIVE
+        </div>
+      </div>
+      <div className={styles.terminalBody}>
+        <AnimatePresence>
+          {transactions.map((tx) => (
+            <motion.div
+              key={tx._uid}
+              initial={{ opacity: 0, x: -20, height: 0 }}
+              animate={{ opacity: 1, x: 0, height: "auto" }}
+              exit={{ opacity: 0, scale: 0.95, height: 0 }}
+              className={styles.transactionRow}
+            >
+              <div className={styles.txInfo}>
+                <span className={styles.txId}>{tx.id}</span>
+                <span className={styles.txUser}>{tx.user}</span>
+                <span className={styles.txAmount}>{tx.amount}</span>
+              </div>
+              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem'}}>
+                <span className={tx.status === 'VERIFIED' ? styles.statusVerified : styles.statusFlagged}>
+                  {tx.status}
+                </span>
+                <span className={styles.txNode}>{tx.node}</span>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
-  const trustRef = useRef(null);
-  const isInView = useInView(trustRef, { once: true, margin: "-100px" });
-  const score = 23;
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
-  const animatedScore = useCountUp(score, 1500, isInView);
 
   return (
     <div className={styles.container}>
@@ -259,166 +277,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* === REDESIGNED: Unified Trust Score Section === */}
-      <section className={styles.trustSection} ref={trustRef}>
+      {/* === REDESIGNED: Live Network Section === */}
+      <section className={styles.networkSection}>
         {/* Background glow blobs */}
-        <div className={styles.trustBg}>
-          <div className={styles.trustBlob1} />
-          <div className={styles.trustBlob2} />
+        <div className={styles.networkBg}>
+          <div className={styles.networkBlob1} />
         </div>
 
-        <div className={styles.trustContent}>
-          {/* LEFT: Text + Trust Levels */}
+        <div className={styles.networkContent}>
+          {/* LEFT: Text */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className={styles.trustText}
+            className={styles.networkText}
           >
             <div className={styles.trustEyebrow}>Decentralized Intelligence</div>
-            <h2 className={styles.trustHeading}>The Unified<br /><span className={styles.trustGradientWord}>Trust Score</span></h2>
+            <h2 className={styles.trustHeading}>Live Global<br /><span className={styles.trustGradientWord}>Verification Network</span></h2>
             <p className={styles.trustDesc}>
-              When a fraudster is flagged on one platform, their Trust Score degrades across the <em>entire network</em>. Gain enterprise-grade protection through collective security intelligence.
+              Watch transactions as they are routed through our decentralized intelligence nodes. Advanced AI models scan payloads in milliseconds, automatically filtering anomalies and authorizing genuine users with unparalleled speed and accuracy.
             </p>
-            <ul className={styles.trustList}>
-              {TRUST_LEVELS.map((level, i) => {
-                const Icon = level.icon;
-                return (
-                  <motion.li
-                    key={level.range}
-                    className={styles.trustLevelItem}
-                    style={{ "--level-color": level.color } as React.CSSProperties}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 + i * 0.15, duration: 0.5 }}
-                    whileHover={{ scale: 1.02, x: 4 }}
-                  >
-                    <div className={styles.trustLevelIcon}>
-                      <Icon size={16} />
-                    </div>
-                    <div className={styles.trustLevelText}>
-                      <span className={styles.trustLevelRange}>{level.range}</span>
-                      <span className={styles.trustLevelLabel}>{level.label}</span>
-                      <span className={styles.trustLevelDesc}>{level.desc}</span>
-                    </div>
-                    <div className={styles.trustLevelGlow} />
-                  </motion.li>
-                );
-              })}
-            </ul>
           </motion.div>
 
-          {/* RIGHT: Animated Score Visual */}
+          {/* RIGHT: Live Feed Visual */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: "easeOut" }}
-            className={styles.trustVisual}
+            className={styles.networkVisual}
           >
-            <div className={styles.mockScoreCard}>
-              {/* Terminal header */}
-              <div className={styles.mockHeader}>
-                <div className={styles.terminalDots}>
-                  <span className={styles.dotRed} />
-                  <span className={styles.dotYellow} />
-                  <span className={styles.dotGreen} />
-                </div>
-                <span className={styles.terminalTitle}>fs_network_eval.exe</span>
-                <div className={styles.headerPing}>
-                  <span className={styles.pingDot} />
-                  LIVE
-                </div>
-              </div>
-
-              {/* Scanning overlay */}
-              <div className={styles.scanOverlay}>
-                <div className={styles.scanLine} />
-              </div>
-
-              {/* Score body */}
-              <div className={styles.mockBody}>
-                {/* SVG Ring */}
-                <div className={styles.svgRingWrapper}>
-                  <svg width="140" height="140" viewBox="0 0 140 140" className={styles.svgRing}>
-                    {/* Background ring */}
-                    <circle cx="70" cy="70" r={radius} fill="none" strokeWidth="8" stroke="rgba(255,255,255,0.06)" />
-                    {/* Animated danger ring */}
-                    <motion.circle
-                      cx="70" cy="70" r={radius} fill="none" strokeWidth="8"
-                      stroke="#ef4444"
-                      strokeLinecap="round"
-                      strokeDasharray={circumference}
-                      initial={{ strokeDashoffset: circumference }}
-                      animate={isInView ? { strokeDashoffset } : {}}
-                      transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
-                      style={{
-                        transform: "rotate(-90deg)",
-                        transformOrigin: "center",
-                        filter: "drop-shadow(0 0 8px #ef4444)",
-                      }}
-                    />
-                    {/* Glow ring */}
-                    <motion.circle
-                      cx="70" cy="70" r={radius} fill="none" strokeWidth="1"
-                      stroke="#ef4444"
-                      strokeLinecap="round"
-                      strokeDasharray={circumference}
-                      initial={{ strokeDashoffset: circumference }}
-                      animate={isInView ? { strokeDashoffset } : {}}
-                      transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
-                      style={{
-                        transform: "rotate(-90deg)",
-                        transformOrigin: "center",
-                        filter: "blur(4px)",
-                        opacity: 0.5,
-                      }}
-                    />
-                  </svg>
-                  {/* Animated counter */}
-                  <div className={styles.scoreInner}>
-                    <span className={styles.scoreValue}>{animatedScore}</span>
-                    <span className={styles.scoreSubtext}>/100</span>
-                  </div>
-                </div>
-
-                {/* Details */}
-                <div className={styles.scoreDetails}>
-                  <div className={styles.riskBadge}>
-                    <AlertTriangle size={14} />
-                    CRITICAL RISK
-                  </div>
-                  <h4 className={styles.scoreTitle}>Overall Risk</h4>
-                  <div className={styles.scoreMetrics}>
-                    <div className={styles.metricRow}>
-                      <span>Prior flags</span>
-                      <span className={styles.metricVal}>4 networks</span>
-                    </div>
-                    <div className={styles.metricRow}>
-                      <span>Pattern match</span>
-                      <span className={styles.metricVal}>94.2%</span>
-                    </div>
-                    <div className={styles.metricRow}>
-                      <span>Identity check</span>
-                      <span className={styles.metricValFail}>FAILED</span>
-                    </div>
-                  </div>
-                  <motion.div
-                    className={styles.actionDenied}
-                    animate={{ opacity: [1, 0.5, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <Ban size={12} />
-                    TRANSACTION BLOCKED
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Holographic shimmer effect */}
-              <div className={styles.holographicSheen} />
-            </div>
+            <LiveTransactionFeed />
           </motion.div>
         </div>
       </section>

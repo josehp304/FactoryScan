@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Review Authenticity Checker",
+  "name": "factory-scan",
   "version": "1.0",
   "description": "Detects genuine vs spam/AI-generated product reviews.",
   "permissions": [

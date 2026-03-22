@@ -40,6 +40,7 @@ app.use('/api/v1/id', validateApiKey, idRoutes);
 app.use('/api/v1/review', validateApiKey, reviewRoutes);
 
 import extensionRoutes from './routes/extension.js';
+import trustCanvasRoutes from './routes/trustcanvas.js';
 
 // For simplicity, dashboard and profile remains unprotected from API key constraints, 
 // as they are meant for the frontend dashboard session.
@@ -47,6 +48,7 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/extension', extensionRoutes);
+app.use('/api/v1/trustcanvas', trustCanvasRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

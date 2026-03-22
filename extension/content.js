@@ -28,59 +28,97 @@ style.textContent = `
     display: inline-flex;
     align-items: center;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 11px;
     font-weight: 700;
+    letter-spacing: 0.03em;
     margin-right: 8px;
     vertical-align: middle;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: white;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid transparent;
     z-index: 999;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
-  .review-checker-badge.genuine { background-color: #10b981; }
-  .review-checker-badge.spam { background-color: #ef4444; }
-  .review-checker-badge.processing { background-color: #6b7280; }
-  .review-checker-badge.error { background-color: #f59e0b; }
+  .review-checker-badge.genuine { 
+    background-color: rgba(16, 185, 129, 0.15); 
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  .review-checker-badge.spam { 
+    background-color: rgba(239, 68, 68, 0.15); 
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  .review-checker-badge.processing { 
+    background-color: rgba(99, 102, 241, 0.15); 
+    color: #818cf8;
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+  .review-checker-badge.error { 
+    background-color: rgba(245, 158, 11, 0.15); 
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+  }
 
   #factory-scan-ui {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-family: system-ui, -apple-system, sans-serif;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
   }
+  
   #factory-scan-analyze-btn {
-    background: #6366f1;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: white;
     border: none;
     padding: 8px 16px;
-    border-radius: 6px;
+    border-radius: 8px;
+    font-size: 13px;
     font-weight: 600;
+    letter-spacing: 0.01em;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 4px rgba(99, 102, 241, 0.3);
   }
-  #factory-scan-analyze-btn:hover { background: #4f46e5; }
-  #factory-scan-analyze-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+  
+  #factory-scan-analyze-btn:hover:not(:disabled) { 
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 12px rgba(99, 102, 241, 0.5);
+  }
+  
+  #factory-scan-analyze-btn:disabled { 
+    background: rgba(255, 255, 255, 0.1); 
+    color: rgba(255, 255, 255, 0.4);
+    box-shadow: none;
+    cursor: not-allowed; 
+  }
 
   .fs-spinner {
-    width: 16px; height: 16px;
-    border: 2px solid #cbd5e1;
-    border-top-color: #6366f1;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #818cf8;
     border-radius: 50%;
-    animation: fs-spin 1s linear infinite;
+    animation: fs-spin 0.8s linear infinite;
     display: none;
   }
   @keyframes fs-spin { to { transform: rotate(360deg); } }
   .fs-analyzing .fs-spinner { display: inline-block; }
+  
   #factory-scan-status {
     font-size: 13px;
-    color: #475569;
+    color: #cbd5e1;
     font-weight: 500;
     display: flex;
     align-items: center;

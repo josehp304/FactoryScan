@@ -5,7 +5,7 @@ import { upsertAndScoreTrustProfile } from '../utils/trustProfile.js';
 
 const router = Router();
 
-// Basic heuristic for AI text (Mock)
+// Offline fallback heuristic for AI text
 function assessAiText(text) {
     const aiPatterns = [/delve into/, /testament to/, /in conclusion/, /tapestry/];
     let flags = 0;
@@ -13,11 +13,50 @@ function assessAiText(text) {
     return flags > 0 ? 85 : 12;
 }
 
-// Basic heuristic for spam/manipulation
+// Offline fallback heuristic for spam/manipulation
 function assessSpam(text) {
     if (text.length < 10) return ['too_short'];
     if (text.match(/buy now|click here/i)) return ['spam_language'];
     return [];
+}
+
+// Modern Gemini LLM Review Assessment
+async function analyzeReviewWithGemini(reviewText) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  const prompt = `Analyze the following product review for authenticity, identifying if it's AI-generated or spam.
+Review: "${reviewText}"
+
+Respond ONLY with valid JSON matching exactly this precise structure:
+{
+  "is_ai_generated": boolean,
+  "ai_probability": number (between 0 and 100),
+  "is_spam": boolean,
+  "spam_flags": [array of string reasons if spam, e.g. "promotional link", "excessive emojis", "repetitive phrasing"]
+}`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json"
+        }
+      })
+    });
+    
+    if (!response.ok) return null;
+    const data = await response.json();
+    const content = data.candidates[0].content.parts[0].text;
+    return JSON.parse(content);
+  } catch (err) {
+    console.error("Gemini Review API Failed", err);
+    return null;
+  }
 }
 
 // POST /api/v1/review/score
@@ -29,11 +68,15 @@ router.post('/score', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Review text and reviewer contact required' });
     }
 
-    // 1. AI Probability
-    const aiProbability = assessAiText(review_text);
+    // 1 & 2. Try Gemini Deep AI Analysis, with offline fallback
+    let aiProbability = assessAiText(review_text);
+    let spamFlags = assessSpam(review_text);
 
-    // 2. Spam assessment
-    const spamFlags = assessSpam(review_text);
+    const geminiAnalysis = await analyzeReviewWithGemini(review_text);
+    if (geminiAnalysis) {
+        aiProbability = geminiAnalysis.ai_probability;
+        spamFlags = geminiAnalysis.spam_flags || [];
+    }
 
     // 3. Determine outcome for trust scoring
     let outcome = 'PASS';

@@ -33,7 +33,7 @@ const cache = new Map();
 // Helper to query our custom FactoryScan backend
 async function classifyReviewsWithBackend(reviews) {
   try {
-    const response = await fetch('http://localhost:3002/api/v1/extension/classify', {
+    const response = await fetch('https://factoryscan.onrender.com/api/v1/extension/classify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

@@ -53,9 +53,9 @@ Cryptographically fingerprinted digital certificates (Degrees, Internships, Agre
 
 ### 3. Physical ID Card Verification
 
-QR-code-based ground truth verification for photographed physical ID cards.
+QR-code-based ground truth verification for photographed physical ID cards, enhanced with Gemini-based visual reasoning.
 
-- **Flow**: Extract QR Token → Fetch DB Record → OCR Photograph → Cross-compare fields.
+- **Flow**: Extract QR Token → Fetch DB Record → Gemini-powered OCR Photograph → Cross-compare fields.
 - **Endpoint**: `POST /api/v1/id/verify`
 
 ### 4. Review Credibility Scoring
@@ -71,6 +71,13 @@ Dedicated proxy endpoint allowing the Factory Scan Chrome Extension to run deep 
 
 - **Flow**: Extract DOM Text → Batch Query Backend → Stream Classification Overlay.
 - **Endpoint**: `POST /api/v1/extension/classify`
+
+### 6. The Trust Database Showcase
+
+A striking visualization of the cross-platform reputation index. Shows network node map mapping the user's trust history across multiple digital properties.
+
+- **Features**: Live network topography, universal trust score halo, and global audit log detailing transactions and cross-shop score deltas.
+- **Route**: `/trust-database`
 
 ---
 
@@ -104,13 +111,14 @@ To ensure Factory Scan remains a first-class fraud prevention tool, all future d
 
 | Layer         | Technology                             | Purpose                                     |
 | ------------- | -------------------------------------- | ------------------------------------------- |
-| **Frontend**  | Next.js / React / Tailwind (optional)  | Management Dashboard & User Profiles        |
+| **Frontend**  | Next.js / React (App Router) / Vanilla CSS | Management Dashboard, Trust DB Visualization |
 | **Backend**   | Node.js / Express                      | Core API Engine & Forensics Orchestration   |
 | **Database**  | Neon DB (Serverless Postgres)          | Trust DB, Hashed Records, Logs              |
 | **Auth**      | Neon Auth                              | Identity Provider & Multi-tenant Access     |
 | **Forensics** | HF `Ateeqq/ai-vs-human-image-detector` | AI-generated Image Detection                |
-| **Metadata**  | `exifr` + `steganography.js`           | Forensic Analysis & Document Fingerprinting |
-| **OCR**       | `Tesseract.js` (or similar)            | Field extraction for ID cards               |
+| **Metadata**  | `exifr` + `jimp`                       | Forensic Analysis & Document Fingerprinting |
+| **AI / OCR**  | Google Gemini API                      | Advanced OCR, NLP review scoring, ID data extraction |
+| **Extension** | Chrome Extension (Manifest V3)         | Zero-config browser scanner for users       |
 
 ---
 

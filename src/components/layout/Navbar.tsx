@@ -12,6 +12,7 @@ import { authClient } from "@/lib/auth/client";
 
 const NAV_LINKS = [
   { name: "Features", href: "/#features" },
+  { name: "Trust Database", href: "/trust-database" },
   { name: "Plugin Integration", href: "/docs/integration" },
   { name: "Dashboard", href: "/dashboard" }, 
 ];
